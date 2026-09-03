@@ -1,14 +1,49 @@
-# Added by Spec Kitty CLI (auto-managed)
-.claude/
+# Agent runtime dirs. .claude/ contents are ignored EXCEPT the shared project
+# config we deliberately commit (see .claude/.gitignore).
+.claude/*
+!.claude/.gitignore
+!.claude/settings.json
 .codex/
-.opencode/
-.windsurf/
 .gemini/
 .cursor/
 .qwen/
+.opencode/
+.windsurf/
 .kilocode/
 .augment/
 .roo/
 .amazonq/
 .github/copilot/
-.kittify/.dashboard
+
+# Worktrees for parallel phase batches
+.worktrees/
+
+# Local env / secrets -- never commit
+.env
+.env.local
+.envrc
+credentials.json
+
+# Local secret + tool wiring (vault item names and paths are operator-specific)
+fnox.toml
+mise.local.toml
+
+# LikeC4 static site build output (docs/architecture/generated/ IS committed)
+docs/architecture/dist/
+
+# Build artifacts and caches
+dist/
+build/
+coverage*.out
+__pycache__/
+*.pyc
+node_modules/
+.venv/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp

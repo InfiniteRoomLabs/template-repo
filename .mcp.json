@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "likec4": {
+      "command": "pnpm",
+      "args": [
+        "dlx",
+        "--config.enable-global-virtual-store=false",
+        "-y",
+        "@likec4/mcp@1.59.2"
+      ],
+      "env": {
+        "LIKEC4_WORKSPACE": "${CLAUDE_PROJECT_DIR}"
+      }
+    }
+  }
+}

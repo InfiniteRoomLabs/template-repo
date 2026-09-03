@@ -1,0 +1,13 @@
+views {
+  // `index` is rendered by default and is what the README embeds.
+  view index {
+    title 'Landscape'
+    include *
+    autoLayout LeftRight
+  }
+
+  view project of project {
+    title 'Inside <project>'
+    include *
+  }
+}

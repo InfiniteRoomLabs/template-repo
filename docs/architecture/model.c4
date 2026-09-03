@@ -1,0 +1,24 @@
+// The logical architecture of <project>. Rename the `project` id to your slug.
+// One element per thing that can fail independently or be owned separately.
+// A structural change to the code updates this file in the same commit.
+model {
+  user = actor 'User' {
+    description 'The person <project> serves'
+  }
+
+  project = system '<project>' {
+    description '<one-line-description>'
+
+    api = component 'API' {
+      technology 'TODO'
+    }
+
+    store = datastore 'Datastore' {
+      technology 'TODO'
+    }
+
+    api -> store 'reads and writes'
+  }
+
+  user -> api 'calls'
+}

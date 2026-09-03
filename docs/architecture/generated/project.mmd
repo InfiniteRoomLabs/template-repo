@@ -1,0 +1,11 @@
+---
+title: "Inside <project>"
+---
+graph TB
+  User@{ icon: "fa:user", shape: rounded, label: "User" }
+  subgraph Project["`<project>`"]
+    Project.Api@{ shape: rectangle, label: "API" }
+    Project.Store@{ shape: disk, label: "Datastore" }
+  end
+  User -. "`calls`" .-> Project.Api
+  Project.Api -. "`reads and writes`" .-> Project.Store

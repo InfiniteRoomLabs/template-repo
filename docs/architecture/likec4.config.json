@@ -1,0 +1,6 @@
+{
+  "$schema": "https://likec4.dev/schemas/config.json",
+  "name": "<slug>",
+  "title": "<project>",
+  "exclude": ["**/node_modules/**", "**/dist/**", "**/.worktrees/**"]
+}

@@ -20,3 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `.gitignore` now ignores secret and tool wiring (`fnox.toml`, `mise.local.toml`, `.env*`, `.envrc`), `.worktrees/`, and build output, and allowlists the committed `.claude/` files instead of ignoring the directory
 - The GOAL treadmill is installed by running `/new-goal-loop` (agent-ops), not vendored: the template ships only `docs/progress.md`
+
+### Removed
+
+- Spec Kitty entirely (`.kittify/`, the 14 `/spec-kitty.*` commands, the `/init` prompt): never used past init in any repo cut from this template, and already removed from agent-ops and infra
+- Untested structure scaffolding from the March 2026 layout: `src/*/CLAUDE.md`, `docs/decisions/`, `docs/runbooks/`, `tools/{scripts,prompts}/`, local `.claude/skills/`

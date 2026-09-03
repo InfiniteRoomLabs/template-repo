@@ -1,0 +1,39 @@
+# Single toolchain entry point. `mise install` then `mise run check` is the gate.
+# Everything runs through `mise run <task>` / `mise exec --`; never bare tools
+# (version drift). Local overrides go in gitignored mise.local.toml.
+
+[tools]
+# `usage` powers the #USAGE shebang in scripts/; keep it pinned.
+usage = "6.0.0"
+# Pin this project's real toolchain here, e.g.:
+# go = "1.26.6"
+# node = "26.3.0"
+# pnpm = "11.5.1"
+# python = "3.13"
+
+[env]
+# LikeC4 is not in the mise registry, so it is invoked through `pnpm dlx` and
+# pinned here. Bump only to a release at least 7 days old: the machine's pnpm
+# hardening (minimum-release-age) refuses anything younger, and the failure
+# reads as a pnpm resolution error, not a LikeC4 error.
+LIKEC4_VERSION = "1.59.2"
+
+[tasks.check]
+description = "The gate: every check step, then a dirty-tree banner"
+run = "scripts/check.sh"
+
+[tasks."arch:validate"]
+description = "Validate the LikeC4 model (syntax + layout drift)"
+run = "pnpm dlx --config.enable-global-virtual-store=false -y likec4@$LIKEC4_VERSION validate"
+
+[tasks."arch:fmt"]
+description = "Format .c4 sources in place"
+run = "pnpm dlx --config.enable-global-virtual-store=false -y likec4@$LIKEC4_VERSION format"
+
+[tasks."arch:gen"]
+description = "Regenerate the committed Mermaid diagrams from the model"
+run = "scripts/arch-gen.sh"
+
+[tasks."arch:dev"]
+description = "Live-reloading diagram browser at http://localhost:5173"
+run = "pnpm dlx --config.enable-global-virtual-store=false -y likec4@$LIKEC4_VERSION start"

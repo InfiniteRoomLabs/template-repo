@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Claude Code harness bootstrap: committed `.claude/settings.json` (marketplaces, default plugins `agency@infinite-room-labs`, `superpowers`, `claude-md-management`, and the `likec4` MCP allowlist) via a `.gitignore` allowlist, `.claude/.gitignore` for local overrides, and a `.claudeignore` that deliberately does not hide `.claude/`
 - `CLAUDE.md` rewritten as the project rulebook (first run, toolchain, working conventions, LikeC4 architecture, key locations, gotchas), plus `AGENTS.md` (Codex pointer), `TESTING.md` (the green rule), `docs/progress.md` (resume anchor), `docs/superpowers/specs/` (where the design spec lands), and an MIT `LICENSE`
 - LikeC4 architecture workspace: `docs/architecture/{likec4.config.json,spec.c4,model.c4,views.c4}` with a seeded model, committed Mermaid exports in `docs/architecture/generated/` spliced into `docs/architecture/README.md`, the `likec4` MCP server in `.mcp.json` (pinned, `pnpm dlx` under the pnpm hardening flags), and a VS Code extension recommendation
+- `SECURITY.md` pointing at GitHub private vulnerability reporting
 - `node` and `pnpm` pinned in `mise.toml` so the LikeC4 gate runs on CI runners that have no global pnpm
 
 ### Changed

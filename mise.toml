@@ -5,10 +5,11 @@
 [tools]
 # `usage` powers the #USAGE shebang in scripts/; keep it pinned.
 usage = "6.0.0"
-# Pin this project's real toolchain here, e.g.:
+# node + pnpm are required by the LikeC4 tasks (`pnpm dlx`), on CI too.
+node = "24.14.0"
+pnpm = "11.4.0"
+# Pin the rest of this project's toolchain here, e.g.:
 # go = "1.26.6"
-# node = "26.3.0"
-# pnpm = "11.5.1"
 # python = "3.13"
 
 [env]

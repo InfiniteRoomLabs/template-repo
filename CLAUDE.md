@@ -1,126 +1,88 @@
-# CLAUDE.md
+# <project> -- Project Instructions for Claude
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+<one-line-description>
 
-## What This Is
+Cut from `InfiniteRoomLabs/template-repo`. This file is the living rulebook: when you find a gotcha, write it into **Gotchas** below in the same commit -- just enough that future you knows it is not a bug.
 
-This repository was created from the `InfiniteRoomLabs/template-repo` template. It comes pre-configured with Spec Kitty for structured, spec-driven development.
+## First run
 
-## First-Time Setup
+- If there is no `GOAL.md`, this repo has not been planned yet. Run `/new-goal-loop <what you are building>` (agent-ops `agency` plugin, enabled by `.claude/settings.json`). It runs the planning session and writes `GOAL.md`, the design spec under `docs/superpowers/specs/`, `docs/phases/_templates/`, and fills `docs/progress.md`. After that, every phase is `/goal complete everything in @GOAL.md` in a fresh context.
+- Replace every placeholder first (the checklist is in `README.md`, "Using this template").
 
-If this project has no `kitty-specs/` directory yet, it hasn't been initialized for development work. **Prompt the user to run `/init` to set up the project.** Offer to brainstorm if they're still figuring out what to build.
+## Read-first
 
-## Spec Kitty
+- **`docs/progress.md`** -- living status. Always read before starting work; update at every phase boundary.
+- **`GOAL.md`** (once it exists) -- the current autonomous phase goal + full roadmap.
+- **The design spec** in `docs/superpowers/specs/` -- locked sections are not re-litigated; read only the sections the current phase needs.
+- **`docs/architecture/`** -- the LikeC4 model. Read it (via the MCP tools) before designing anything structural.
 
-This repo uses **Spec Kitty** for structured development workflows.
+## Toolchain
 
-### Workflow Phases (in order)
-`specify` -> `plan` -> `tasks` -> `implement` -> `review` -> `accept` -> `merge`
+- **Everything through `mise`:** `mise install`, then `mise run check` is the gate. Pin real versions in `mise.toml [tools]`; never bare tool invocations (version drift). `<toolchain>`.
+- **Python:** `uv run` only. **JS:** `pnpm` only (`pnpm dlx`, never `npx`).
+- **Secrets:** a **gitignored** `fnox.toml` maps env vars to Bitwarden items; run anything that needs them as `fnox exec -- <cmd>`. No `.env`/`.envrc`, never export a secret in a shell, never echo a value (test resolution by length: `fnox exec -- sh -c 'echo ${#MY_SECRET}'`). Add `fnox.toml` only when there is a real secret.
 
-Each phase has a corresponding `/spec-kitty.{phase}` command. Always run them in sequence.
+## Working conventions
 
-### Three Mission Types
-- **software-dev**: research -> design -> implement -> test -> review. TDD-first, library-first architecture.
-- **research**: question -> methodology -> gather -> analyze -> synthesize -> publish. Tracks sources in CSV evidence logs.
-- **documentation**: discover -> audit -> design -> generate -> validate -> publish. Follows Divio 4-type system (tutorial, how-to, reference, explanation).
+- **Phases, not tasks.** One GOAL block = one phase = one branch `phase-<n>/<slug>` = one gate = one `--no-ff` merge. Parallel batches (if any) run as worktrees under `.worktrees/` (gitignored); everything else is in-place branches.
+- **Four-lane review gate before every merge:** code review, simplification, security (parallel, read-only), then QA (the only lane that runs `mise run check`). Work orders in `docs/phases/_templates/`; reports to `docs/phases/<n>/reports/<lane>.md` and via `SendMessage` to `team-lead`. Triage, ONE fix commit, re-gate, merge.
+- **Model rules (non-negotiable):** pass `model:` explicitly on every dispatch; reviewers one tier above the implementer (sonnet -> opus, opus -> fable); haiku only for read-only sweeps that cannot hit a permission prompt. Check an agent's `tools:` before writing its prompt; `general-purpose` has everything.
+- **Clean up agents** with `TaskStop` once they are no longer needed: review lanes after triage, implementers after their merge, QA after its verdict is acted on.
+- **Green rule:** see `TESTING.md`. No skipped/focused/silenced tests without an issue link; warnings are errors; the coverage floor is enforced by the gate, not by promises.
+- **Commits:** conventional, imperative, scoped (`feat(<scope>): ...`, `fix: ...`, `docs: ...`, `chore(ci): ...`). **Stage and commit in separate tool calls** (version guard); never `-a`/`-am`, never `--no-verify`. On `main`, `CHANGELOG.md` must be staged with the commit (changelog guard -- a Claude hook, not a git hook). Keep a Changelog, `[Unreleased]` on top. Co-author trailer per harness rules.
+- **Public-repo hygiene on every commit:** no vault item names, internal IPs/domains, real tenant/account IDs, tokens, or personal correspondents. Fixtures synthetic. Run `scripts/redaction-check.sh` before committing.
+- **Docs are ASCII-only and never hard-wrapped.** No smart quotes, em dashes, or arrows: use `--` and `->`. Diagrams are Mermaid.
+- **Remotes:** this repo may dual-push (GitHub + an internal mirror). `git remote -v` before pushing a WIP branch; internal hostnames never appear in tracked files.
 
-### Key Directories
-- `.kittify/` -- Mission definitions, templates, and scripts. Ignored by `.claudeignore` -- do not scan.
-- `.claude/commands/spec-kitty.*.md` -- Agent-facing commands generated from `.kittify/` templates.
-- `kitty-specs/NNN-feature-name/` -- Working artifacts for each feature (spec.md, plan.md, tasks.md, etc.).
+## Architecture (LikeC4)
 
-## Agent Marketplace
+The architecture is modelled as code in `docs/architecture/*.c4` and is part of the deliverable, not a side artifact. The LikeC4 **workspace** is the repo root; the **project** is scoped by `docs/architecture/likec4.config.json`.
 
-This project is configured to use the Infinite Room Labs private Claude Code marketplace. Install plugins with:
+- Read the model before designing. The `likec4` MCP server is wired in `.mcp.json`: use `read-project-summary`, `search-element`, `read-element`, `find-relationships` instead of grepping `.c4` files (they resolve FQNs and derived relationships; grep does not). `preview-view` renders a draft view without writing files.
+- A structural change to the code -- a new service, a new datastore, a relationship that did not exist -- updates `docs/architecture/*.c4` **in the same commit**. A phase that adds a component without its element is not done. The design spec lists, by FQN, what a phase adds, changes, or removes.
+- `mise run check` runs `likec4 validate`, `likec4 format --check`, and a staleness check on the committed Mermaid in `docs/architecture/generated/` (and the landscape view spliced into `docs/architecture/README.md`). Regenerate with `mise run arch:gen` and commit the result.
+- The gate proves the model is well-formed and the diagrams are current. It does **not** prove the model is true -- that is the code-review lane's job.
 
+## Key locations
+
+| Concern | Path |
+|---|---|
+| Gate, scripts, CI | `mise.toml`, `scripts/`, `.github/workflows/ci.yml` |
+| Process | `GOAL.md`, `docs/progress.md`, `docs/phases/` |
+| Design spec | `docs/superpowers/specs/` |
+| Architecture model / project config / generated diagrams | `docs/architecture/*.c4`, `docs/architecture/likec4.config.json`, `docs/architecture/generated/` |
+| Testing rules | `TESTING.md` |
+| Harness bootstrap (marketplaces, plugins, MCP allowlist) | `.claude/settings.json`, `.mcp.json` |
+| Codex brief | `AGENTS.md` |
+
+## Commands you'll want
+
+```bash
+mise install                          # pinned toolchain
+mise run check                        # the gate (all steps + dirty-tree banner); `mise run check -- <step>` for one
+mise run arch:dev                     # live diagram browser at http://localhost:5173
+mise run arch:validate                # LikeC4 syntax + layout-drift check
+mise run arch:fmt                     # format .c4 sources in place
+mise run arch:gen                     # regenerate committed Mermaid diagrams + README splice
+scripts/redaction-check.sh            # staged index; --range main..phase-1/foo for a branch
+fnox exec -- <cmd>                    # run with secrets injected
+usage lint scripts/check.sh           # validate a #USAGE spec
 ```
-/plugin marketplace add InfiniteRoomLabs/agent-ops
-/plugin install core@infinite-room-labs
-```
 
-## Project Structure
+## Gotchas
 
-This repo uses a layered structure for documentation, agent skills, tooling, and scoped context.
+- `#USAGE` directives take **no space** after `#`. `usage` 6.0.0 silently ignores `# USAGE`, and the script then runs with every `usage_*` variable unset.
+- The changelog guard and version guard are Claude hooks from agent-ops, not git hooks. If a commit is blocked, read the message and fix the staging -- do not bypass.
+- `.claude/` is committed through a `.gitignore` allowlist (`settings.json` and `.gitignore` only). `git add .claude/anything-else` is silently ignored.
+- `mise run check` on a dirty tree prints a banner and still exits 0: green describes disk, not HEAD. Verify `git status --porcelain` is empty before reporting a gate result.
+- LikeC4 is pinned in `mise.toml [env] LIKEC4_VERSION`, not `[tools]` (it is not in the mise registry; every call is `pnpm dlx`). Bump only to a release at least 7 days old -- the pnpm release-age gate refuses younger ones and the failure reads as a resolution error, not a LikeC4 error.
+- `.mcp.json` uses `${CLAUDE_PROJECT_DIR}`, not `${workspaceFolder}`: Claude Code does not expand the VS Code variable and passes it through literally.
+- The first `mise run check` on a clean machine downloads ~120 MB of LikeC4; it is cached after that. There is no SVG export -- diagrams are committed as Mermaid so GitHub renders them; PNG needs Playwright and is not in the gate.
+- The VS Code LikeC4 extension registers its own `likec4` MCP server, so you may see two. Both work; pick one.
 
-```
-project/
-  CLAUDE.md                        <- root agent context (this file)
-  docs/
-    architecture.md                <- system architecture overview
-    decisions/                     <- Architecture Decision Records (ADRs)
-      000-template.md              <- copy this to create a new ADR
-    runbooks/
-      README.md                    <- operational runbook conventions
-  .claude/
-    commands/                      <- Spec Kitty agent commands (generated)
-    skills/
-      code-review/SKILL.md         <- reusable code review workflow
-      refactor/SKILL.md            <- safe refactoring workflow
-      release/SKILL.md             <- versioning, changelog, tagging, publish
-  tools/
-    scripts/
-      README.md                    <- utility script conventions
-    prompts/
-      README.md                    <- reusable prompt template conventions
-  src/
-    api/
-      CLAUDE.md                    <- scoped context for the API layer
-    persistence/
-      CLAUDE.md                    <- scoped context for the persistence layer
-  kitty-specs/                     <- Spec Kitty working artifacts (created on use)
-```
+## If you break something
 
-## Scoped CLAUDE.md Files
-
-Context files can exist at any directory level. Agents load the CLAUDE.md closest to the files they are working with, in addition to this root file. This means:
-
-- `src/api/CLAUDE.md` provides API-layer context when working in `src/api/`
-- `src/persistence/CLAUDE.md` provides persistence context when working in `src/persistence/`
-- You can add a CLAUDE.md to any subdirectory to provide scoped guidance
-
-**When creating a scoped CLAUDE.md:**
-
-1. Keep it focused on that layer only -- cross-cutting concerns stay in this root file
-2. Aim for under 100 lines -- agents read this on every task in the directory
-3. Include: what the layer does, its tech, key conventions, how to test it, and links to adjacent layers
-4. Replace all `[PLACEHOLDER]` blocks before committing -- placeholders in CLAUDE.md files confuse agents
-
-## Agent Skills
-
-Reusable agent workflows live in `.claude/skills/`. Each skill is a structured procedure an agent can follow end-to-end. Available skills:
-
-| Skill | Path | Invocation |
-|-------|------|-----------|
-| Code Review | `.claude/skills/code-review/SKILL.md` | "Use the code-review skill to review this PR" |
-| Refactor | `.claude/skills/refactor/SKILL.md` | "Use the refactor skill to clean up src/api/UserController.php" |
-| Release | `.claude/skills/release/SKILL.md` | "Use the release skill to cut a patch release" |
-
-Note: `.claude/` is in `.claudeignore` and `.gitignore` -- skills are available to local agents but are not committed to the repo. This is by design (see Git Discipline below). To share skills with a team, publish them via the agent-ops marketplace.
-
-## Documentation
-
-- `docs/architecture.md` -- fill in the system overview, component diagram, data flow, tech stack, and deployment topology for this project
-- `docs/decisions/` -- use ADRs for any significant technical choice. Copy `docs/decisions/000-template.md` to create a new one. Name files `NNN-short-slug.md` with a sequential number
-- `docs/runbooks/` -- operational procedures for recurring production tasks. See `docs/runbooks/README.md` for conventions
-
-## Tooling
-
-- `tools/scripts/` -- utility scripts for development, CI, and ops. See `tools/scripts/README.md` for conventions
-- `tools/prompts/` -- reusable prompt templates for common AI-assisted tasks. See `tools/prompts/README.md` for format
-
-## Conventions
-
-### File Encoding
-**UTF-8 only.** No Windows-1252 smart quotes, em/en dashes, or copy-pasted Office characters. Use ASCII equivalents (`"` not curly quotes, `-` not em dash, `->` not arrows). Run `spec-kitty validate-encoding --feature <id>` to check, add `--fix` to auto-repair.
-
-### Diagrams
-**Always use Mermaid** for all diagrams. No ASCII art dependency graphs or architecture diagrams.
-
-### Path References
-Always use absolute paths or paths relative to project root. Never refer to a folder by name alone.
-
-### Git Discipline
-- Never commit agent directories (`.claude/`, `.codex/`, `.gemini/`, etc.)
-- Imperative mood commit messages
-- Never rewrite shared branch history
-- Never commit secrets or credentials
+- Gate red: read the first failing step's output; `mise run check -- <step>` isolates it.
+- Hook blocked a commit: it is doing its job; check what you staged.
+- Fresh session disoriented: `docs/progress.md` has the ledger and the how-to-resume checklist.
+- CI green locally, red on GitHub: check that the `mise.toml` pins match and nothing depends on a local `mise.local.toml`.

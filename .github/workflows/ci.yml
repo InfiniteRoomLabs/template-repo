@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          install: true
+          cache: true
+      # LikeC4 runs through `pnpm dlx` (not a mise tool); cache its store so the
+      # ~120 MB download happens once per LIKEC4_VERSION bump.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pnpm/dlx
+          key: pnpm-dlx-likec4-${{ hashFiles('mise.toml') }}
+          restore-keys: pnpm-dlx-likec4-
+      - run: mise run check

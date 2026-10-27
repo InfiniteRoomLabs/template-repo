@@ -32,3 +32,7 @@ Tag test names so triage can grep them. A feature is not done until every applic
 ## Coverage
 
 Set a floor and enforce it in the gate (`scripts/check.sh`), not in promises. Excluding files from the measurement is a design decision: flag it in the same commit and keep the excluded set tiny (an entrypoint with one statement, not "everything hard to test").
+
+## Manual tests
+
+Live checks the suite must never run are manual tests in `<testdir>/manual/` (the directory the automated tests use), one `MT-<nnn>-<slug>.md` beside its `.results` log, in the agent-ops `manual-test` format: one tool call per step, a `jq -e` or exact-shape expected result, a declared read budget, placeholders resolved from the gitignored `mise.local.toml`. They run at release (release-prep Step 4a) and a FAIL refuses the tag. Each names what blocks its automation; the count of active files is tracked debt. Active: none yet.

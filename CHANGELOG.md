@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `TESTING.md` `## Manual tests`: live checks the suite must never run go in `<testdir>/manual/` in the agent-ops `manual-test` format and run at release (release-prep Step 4a); the active count is tracked debt
 - `mise.toml` as the single toolchain entry point, with a `check` task and a language-agnostic gate skeleton (`scripts/check.sh`) that ends in a dirty-tree banner
 - `scripts/redaction-check.sh`: public-repo hygiene check against the agent-ops redaction term list; no-op when `REDACTION_TERMS_RESOLVER` is not set
 - LikeC4 tasks (`arch:validate`, `arch:fmt`, `arch:gen`, `arch:dev`) pinned through `pnpm dlx`, and `scripts/arch-gen.sh` with a `--check` mode that fails the gate on stale diagrams
